@@ -4,10 +4,12 @@ import api from "../services/api";
 
 export const useAuthStore = create((set, get) => ({
   authUser: null,
+  socket: null,
   isCheckingAuth: false,
   isSigningUp: false,
   isLoggingIn: false,
   isUpdatingProfile: false,
+  onlineUsers: [],
   checkAuth: async () => {
     set({ isCheckingAuth: true });
     try {
@@ -37,9 +39,10 @@ export const useAuthStore = create((set, get) => ({
     try {
       const res = await api.post("/auth/signin", data);
       set({ authUser: res.data });
+      get().connectSocket();
       toast.success("Signed in successfully!");
     } catch (error) {
-      toast.error(error.response.data.message);
+      toast.error(error.response.data.message || "Error signing in");
     } finally {
       set({ isLoggingIn: false });
     }
@@ -48,6 +51,7 @@ export const useAuthStore = create((set, get) => ({
     try {
       await api.post("/auth/signout");
       set({ authUser: null });
+      get().disconnectSocket();
       toast.success("Signed out successfully!");
     } catch (error) {
       toast.error("Error signing out");
@@ -64,5 +68,24 @@ export const useAuthStore = create((set, get) => ({
     } finally {
       set({ isUpdatingProfile: false });
     }
+  },
+  connectSocket: () => {
+    const { authUser, socket } = get();
+    if (!authUser || socket?.connected) return;
+    const socketUrl = import.meta.env.REACT_APP_SOCKET_URL;
+    const newSocket = io(socketUrl, {
+      query: {
+        userId: authUser._id,
+      },
+    });
+    newSocket.connect();
+    set({ socket: newSocket });
+    //listen for online users
+    newSocket.on("onlineUsers", (userIds) => {
+      set({ onlineUsers: userIds });
+    });
+  },
+  disconnectSocket: () => {
+    if (get().socket) get().socket.disconnect;
   },
 }));
