@@ -1,11 +1,11 @@
 import { Navigate, Route, Routes } from "react-router";
 import "./App.css";
 import Navbar from "./components/Navbar";
-import Home from "./pages/home";
-import Profile from "./pages/profile";
-import Setting from "./pages/setting";
-import Signin from "./pages/signin";
-import Signup from "./pages/signup";
+import Home from "./pages/Home";
+import Profile from "./pages/Profile";
+import Setting from "./pages/Setting";
+import Signin from "./pages/Signin";
+import Signup from "./pages/Signup";
 import { Toaster } from "react-hot-toast";
 import { useAuthStore } from "./store/useAuthStore";
 import { useThemeStore } from "./store/useThemeStore";
